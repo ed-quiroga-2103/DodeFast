@@ -71,7 +71,11 @@ class BasicParser(Parser):
     @_('ENCASO var CuandoC SiNo FINENCASO SEMI')
     def EnCasoB(self,p):
         self.X = p.var
-        return ("EnCasoB", p.CuandoC, p.SiNo)
+        print(self.X)
+        tree = ["EnCasoB", p.CuandoC, p.SiNo]
+        tree[1][0][1][1] = self.X
+
+        return tree
 
     @_('CuandoB CuandoA')
     def CuandoA(self, p):
@@ -96,7 +100,7 @@ class BasicParser(Parser):
 
     @_('CUANDO EvaluationB Entons')
     def CuandoD(self, p):
-        return ("Cuando", p.EvaluationB, p.Entons)
+        return ["Cuando", p.EvaluationB, p.Entons]
 
     @_('var Cond expr')
     def Evaluation(self,p):
@@ -104,7 +108,7 @@ class BasicParser(Parser):
 
     @_('Cond expr')
     def EvaluationB(self,p):
-        return(p.Cond, self.X, p.expr)
+        return [p.Cond, self.X, p.expr]
 
 
     @_('ENTONS LBRACK statement RBRACK')
@@ -161,7 +165,7 @@ class BasicParser(Parser):
         return ('var', p.VAR)
 
     def error(self, p):
-        print("Parsing Error! Maybe you mixed the order of something")
+        print("Parsing Error! Maybe you mixed the order or misspelled something")
 
 class BasicExecute:
 
@@ -304,7 +308,7 @@ if __name__ == '__main__':
     env = {}
     while True:
         try:
-            text = input('basic > ')
+            text = input('DodeFast >>> ')
         except EOFError:
             break
         if text:
@@ -320,7 +324,7 @@ if __name__ == '__main__':
     env = {}
     while True:
         try:
-            text = input('basic > ')
+            text = input('DodeFast >>> ')
         except EOFError:
             break
         if text:
@@ -335,7 +339,7 @@ if __name__ == '__main__':
     env = {}
     while True:
         try:
-            text = input('>>> ')
+            text = input('DodeFast >>> ')
         except EOFError:
             break
         if text:
@@ -345,4 +349,4 @@ if __name__ == '__main__':
 
             BasicExecute(tree, env)
 
-            print(tree)
+            #print(tree)
