@@ -5,7 +5,7 @@ class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
-                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA}
+                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO}
 
     ignore = " "
 
@@ -27,6 +27,8 @@ class BasicLexer(Lexer):
     INC = r'Inc'
     DEC = r'Dec'
     INI = r'Ini'
+    MOVER = r'Mover'
+    ALEATORIO = r'Aleatorio'
     DECLARATION = r"DCL"
     ASSIGNATION = "DEFAULT"
     ENCASO = r"EnCaso"
@@ -179,6 +181,13 @@ class BasicParser(Parser):
     def statement(self, p):
         return ('fun_call', p.INI, p.statement0, p.statement1)
 
+    @_('MOVER PARENTHESIS_LEFT statement PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('fun_call', p.MOVER, p.statement)
+
+    @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('fun_call', p.ALEATORIO)
 
     def error(self, p):
         print("Parsing Error! Maybe you mixed the order or misspelled something")
@@ -281,7 +290,7 @@ class BasicExecute:
                 self.env[node[2][1]] = self.walkTree(node[3])
                 print(self.env[node[2][1]])
             else:
-                print("No sirve")
+                print("Las funciones no estan definidas")
 
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
