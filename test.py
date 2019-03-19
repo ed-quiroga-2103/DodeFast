@@ -1,6 +1,7 @@
 from sly import Lexer as Lexer
 from sly import Parser as Parser
 
+
 class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
@@ -197,8 +198,6 @@ class BasicExecute:
         if node[0] == 'num':
             return node[1]
 
-        if node[0] == 'str':
-            return node[1]
 
         if node[0] == 'EnCasoA':
 
