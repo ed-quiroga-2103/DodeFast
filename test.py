@@ -5,7 +5,7 @@ class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
-                MINUS}
+                MINUS, INC, DEC, INI }
 
     ignore = " "
 
@@ -20,8 +20,13 @@ class BasicLexer(Lexer):
     GREATER = r">"
     LESSER = r"<"
     MINUS = r"-"
-#----Palabras------
+    PARENTHESIS_LEFT = "("
+    PARENTHESIS_RIGHT = ")"
 
+#----Palabras------
+    INC = r'Inc'
+    DEC = r'Dec'
+    INI = r'Ini'
     DECLARATION = r"DCL"
     ASSIGNATION = "DEFAULT"
     ENCASO = r"EnCaso"
@@ -155,7 +160,6 @@ class BasicParser(Parser):
     def expr(self, p):
         return ('num', -1*p.INT)
 
-
     @_('VAR')
     def expr(self, p):
         return ('var', p.VAR)
@@ -163,6 +167,19 @@ class BasicParser(Parser):
     @_('VAR')
     def var(self, p):
         return ('var', p.VAR)
+
+    @_('INC "(" statement "," statement ")"')
+    def statement(self, p):
+        return ('fun_call', p.INC, p.statement0, p.statement1)
+
+    @_('DEC "(" statement "," statement ")"')
+    def statement(self, p):
+        return ('fun_call', p.DEC, p.statement0, p.statement1)
+
+    @_('INI "(" statement "," statement ")"')
+    def statement(self, p):
+        return ('fun_call', p.INI, p.statement0, p.statement1)
+
 
     def error(self, p):
         print("Parsing Error! Maybe you mixed the order or misspelled something")
@@ -254,16 +271,18 @@ class BasicExecute:
             except:
                 print("Error")
 
-
-        if node[0] == 'fun_def':
-            self.env[node[1]] = node[2]
-
         if node[0] == 'fun_call':
-            try:
-                return self.walkTree(self.env[node[1]])
-            except LookupError:
-                print("Undefined function '%s'" % node[1])
-                return 0
+            if node[1] == 'Inc':
+                self.env[node[2][1]] = self.walkTree(node[2]) + self.walkTree(node[3])
+                print(self.env[node[2][1]])
+            elif node[1] == 'Dec':
+                self.env[node[2][1]] = self.walkTree(node[2]) - self.walkTree(node[3])
+                print(self.env[node[2][1]])
+            elif node[1] == 'Ini':
+                self.env[node[2][1]] = self.walkTree(node[3])
+                print(self.env[node[2][1]])
+            else:
+                print("No sirve")
 
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
@@ -315,7 +334,7 @@ if __name__ == '__main__':
             lex = lexer.tokenize(text)
             for token in lex:
                 print(token)
-
+"""
 #--------------------Parsing run----------------------
 
 if __name__ == '__main__':
@@ -350,3 +369,4 @@ if __name__ == '__main__':
             BasicExecute(tree, env)
 
             #print(tree)
+"""
