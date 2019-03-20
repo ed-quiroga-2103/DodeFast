@@ -21,8 +21,8 @@ class BasicLexer(Lexer):
     GREATER = r">"
     LESSER = r"<"
     MINUS = r"-"
-    PARENTHESIS_LEFT = "("
-    PARENTHESIS_RIGHT = ")"
+    PARENTHESIS_LEFT = r"\("
+    PARENTHESIS_RIGHT = r"\)"
 
 #----Palabras------
     INC = r'Inc'
