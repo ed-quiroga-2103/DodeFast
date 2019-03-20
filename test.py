@@ -1,17 +1,15 @@
 from sly import Lexer as Lexer
 from sly import Parser as Parser
 
-
 class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
-                MINUS, INC, DEC, INI }
+                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO}
 
     ignore = " "
 
 #----Simbolos------
-
     SEMI = r";"
     LBRACK = r"{"
     RBRACK = r"}"
@@ -21,6 +19,10 @@ class BasicLexer(Lexer):
     GREATER = r">"
     LESSER = r"<"
     MINUS = r"-"
+<<<<<<< HEAD
+=======
+    COMA = r","
+>>>>>>> ff79ca9c2a3afbc192a05465a3e5e559ecf9e0b1
     PARENTHESIS_LEFT = r"\("
     PARENTHESIS_RIGHT = r"\)"
 
@@ -28,6 +30,8 @@ class BasicLexer(Lexer):
     INC = r'Inc'
     DEC = r'Dec'
     INI = r'Ini'
+    MOVER = r'Mover'
+    ALEATORIO = r'Aleatorio'
     DECLARATION = r"DCL"
     ASSIGNATION = "DEFAULT"
     ENCASO = r"EnCaso"
@@ -80,7 +84,6 @@ class BasicParser(Parser):
         print(self.X)
         tree = ["EnCasoB", p.CuandoC, p.SiNo]
         tree[1][0][1][1] = self.X
-
         return tree
 
     @_('CuandoB CuandoA')
@@ -169,18 +172,25 @@ class BasicParser(Parser):
     def var(self, p):
         return ('var', p.VAR)
 
-    @_('INC "(" statement "," statement ")"')
+    @_('INC PARENTHESIS_LEFT statement COMA statement PARENTHESIS_RIGHT')
     def statement(self, p):
         return ('fun_call', p.INC, p.statement0, p.statement1)
 
-    @_('DEC "(" statement "," statement ")"')
+    @_('DEC PARENTHESIS_LEFT statement COMA statement PARENTHESIS_RIGHT')
     def statement(self, p):
         return ('fun_call', p.DEC, p.statement0, p.statement1)
 
-    @_('INI "(" statement "," statement ")"')
+    @_('INI PARENTHESIS_LEFT statement COMA statement PARENTHESIS_RIGHT')
     def statement(self, p):
         return ('fun_call', p.INI, p.statement0, p.statement1)
 
+    @_('MOVER PARENTHESIS_LEFT statement PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('fun_call', p.MOVER, p.statement)
+
+    @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('fun_call', p.ALEATORIO)
 
     def error(self, p):
         print("Parsing Error! Maybe you mixed the order or misspelled something")
@@ -215,6 +225,8 @@ class BasicExecute:
         if node[0] == 'num':
             return node[1]
 
+        if node[0] == 'str':
+            return node[1]
 
         if node[0] == 'EnCasoA':
 
@@ -281,7 +293,7 @@ class BasicExecute:
                 self.env[node[2][1]] = self.walkTree(node[3])
                 print(self.env[node[2][1]])
             else:
-                print("No sirve")
+                print("Las funciones no estan definidas")
 
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
@@ -333,7 +345,7 @@ if __name__ == '__main__':
             lex = lexer.tokenize(text)
             for token in lex:
                 print(token)
-"""
+
 #--------------------Parsing run----------------------
 
 if __name__ == '__main__':
@@ -367,5 +379,4 @@ if __name__ == '__main__':
 
             BasicExecute(tree, env)
 
-            #print(tree)
-"""
+            print(tree)
