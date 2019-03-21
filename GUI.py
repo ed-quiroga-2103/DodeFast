@@ -49,6 +49,7 @@ class Window(Frame):
 
         # adds a command to the menu option, calling it exit, and the
         # command it runs on event is client_exit
+        file.add_command(label= "New File", command = self.newFile)
         file.add_command(label="Exit", command=self.client_exit)
 
         #added "file" to our menu
@@ -74,17 +75,36 @@ class Window(Frame):
     def client_exit(self):
         exit()
 
+    def newFile(self):
+        newWindow = Toplevel(self)
+
+
+        newWindow.config(bg = "black")
+
+        menu = Menu(newWindow, background='black', foreground='white',
+               activebackground='black', activeforeground='white')
+        newWindow.config(menu=menu)
+
+        menu.add_cascade(label = "File")
+
+
+        text = Text(newWindow, bg = "black", fg = "white")
+
+        scroll = Scrollbar(newWindow, command= text.yview)
+        scroll.grid(column = 1 , row = 0,sticky = E)
+
+        text.config(yscroll = scroll.set)
+        text.grid(column = 0 ,row = 0,sticky = W)
+
+        scroll.config(command= text.yview)
+
+
+
     def showText(self, event):
         self.txt += ">>> " + self.e.get() + "\n"
 
         self.e.delete(0,END)
 
-        """
-        self.myWidget.configure(yscrollcommand=None, state=NORMAL)
-        self.myWidget.delete(1.0, END)
-        self.myWidget.insert(END, data)
-        self.myWidget.configure(yscrollcommand=self.myWidgetScrollbar.set, state=DISABLED)
-        """
         self.text.config(state = NORMAL)
 
         self.text.delete(1.0, END)

@@ -19,10 +19,7 @@ class BasicLexer(Lexer):
     GREATER = r">"
     LESSER = r"<"
     MINUS = r"-"
-<<<<<<< HEAD
-=======
     COMA = r","
->>>>>>> ff79ca9c2a3afbc192a05465a3e5e559ecf9e0b1
     PARENTHESIS_LEFT = r"\("
     PARENTHESIS_RIGHT = r"\)"
 
@@ -373,10 +370,6 @@ if __name__ == '__main__':
         except EOFError:
             break
         if text:
-            lex = lexer.tokenize(text)
-
-            tree = parser.parse(lex)
-
             BasicExecute(tree, env)
 
-            print(tree)
+#            print(tree)
