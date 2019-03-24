@@ -5,7 +5,7 @@ class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
-                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO}
+                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO, REPITA, HASTAENCONTRAR, DESDE, HASTA, HAGA, FINDESDE}
 
     ignore = " "
 
@@ -41,6 +41,12 @@ class BasicLexer(Lexer):
     ENTONS = r"Entons"
     SINO = r"SiNo"
     FINENCASO = r"Fin-EnCaso"
+    REPITA = 'Repita'
+    HASTAENCONTRAR ='HastaEncontrar'
+    DESDE = 'Desde'
+    HASTA = 'Hasta'
+    HAGA = 'Haga'
+    FINDESDE= 'Fin-Desde'
     VAR = r"[a-zA-Z_][a-zA-Z0-9_]*"
 
 
@@ -67,6 +73,14 @@ class BasicParser(Parser):
     @_('var_assign')
     def statement(self, p):
         return p.var_assign
+
+    @_('REPITA LBRACK statement RBRACK HASTAENCONTRAR Evaluation SEMI')
+    def statement(self,p):
+        return ('while_loop', p.statement, p.Evaluation)
+
+    @_('DESDE var EQ expr HASTA expr HAGA statement FINDESDE')
+    def statement(self, p):
+        return ('for_loop', p.var, p.expr0, p.expr1, p.statement)
 
     @_('EnCasoA')
     def statement(self, p):
@@ -367,26 +381,39 @@ class BasicExecute:
             except LookupError:
                 print("Undefined variable '"+node[1]+"' found!")
                 return
+        if node[0]== 'while_loop':
+            loop_sentence = node[1][1]
+            loop_setup = self.walkTree(node[2])
+            val= node[2][1][1]
+            i= self.walkTree(node[2][1])
+            print (i)
+            while True:
+                #self.walkTree(loop_sentence)
+                print(loop_sentence)
+                if self.walkTree(node[2]):
+                    print ("Se cumple la condición")
+                    break
+                i+=1
+                del env[node[2][1][1]]
+                self.env[val] = i
+
 
         if node[0] == 'for_loop':
-            if node[1][0] == 'for_loop_setup':
-                loop_setup = self.walkTree(node[1])
+            #return ('for_loop', p.var, p.expr, p.expr, p.statement)
+            try:
+                loop_count = self.env[node[2][0]]
+            except:
+                loop_count = node[2][1]
 
-                loop_count = self.env[loop_setup[0]]
-                loop_limit = loop_setup[1]
-
-                for i in range(loop_count+1, loop_limit+1):
-                    res = self.walkTree(node[2])
-                    if res is not None:
-                        print(res)
-                    self.env[loop_setup[0]] = i
-                del self.env[loop_setup[0]]
-
-        if node[0] == 'for_loop_setup':
-            return (self.walkTree(node[1]), self.walkTree(node[2]))
-
+            val = node[2][0]
+            loop_limit = node[3][1]
+            res = self.walkTree(node[2])
+            for i in range(loop_count+1, loop_limit+1):
+                if res is not None:
+                    print(res)
+                    
 #----------------------Lexing run--------------------
-"""
+'''
 if __name__ == '__main__':
     lexer = BasicLexer()
     env = {}
@@ -414,7 +441,7 @@ if __name__ == '__main__':
         if text:
             tree = parser.parse(lexer.tokenize(text))
             print(tree)
-"""
+    '''
 #---------------------Full run-----------------------
 
 if __name__ == '__main__':
@@ -427,5 +454,6 @@ if __name__ == '__main__':
         except EOFError:
             break
         if text:
+            tree = parser.parse(lexer.tokenize(text))
             BasicExecute(tree, env)
 #            print(tree)
