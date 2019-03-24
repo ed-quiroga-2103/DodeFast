@@ -22,13 +22,18 @@ class BasicLexer(Lexer):
     COMA = r","
     PARENTHESIS_LEFT = r"\("
     PARENTHESIS_RIGHT = r"\)"
+    TWO_POINTS = r":"
 
 #----Palabras------
+    INICIO = r'Inicio'
+    FINAL = r'Final'
     INC = r'Inc'
     DEC = r'Dec'
     INI = r'Ini'
     MOVER = r'Mover'
     ALEATORIO = r'Aleatorio'
+    PROC = r'Proc'
+    LLAMAR = r'Llamar'
     DECLARATION = r"DCL"
     ASSIGNATION = "DEFAULT"
     ENCASO = r"EnCaso"
@@ -189,6 +194,22 @@ class BasicParser(Parser):
     def statement(self, p):
         return ('fun_call', p.ALEATORIO)
 
+    @_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
+    def statement(self, p):
+        return ('process_def', p.VAR, p.statement)
+
+    @_('PROC VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
+    def statement(self, p):
+        return ('process_def_parameters', p.VAR, p.expr, p.statement)
+
+    @_('LLAMAR VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('process_call', p.VAR)
+
+    @_('LLAMAR VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('process_call_parameters', p.VAR, p.expr)
+
     def error(self, p):
         print("Parsing Error! Maybe you mixed the order or misspelled something")
 
@@ -292,6 +313,42 @@ class BasicExecute:
             else:
                 print("Las funciones no estan definidas")
 
+        if node[0] == 'process_def':
+            if 'var_assign' in node[2]:
+                print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
+            else:
+                self.env[node[1]] = node[2]
+
+        if node[0] == 'process_call':
+            try:
+                return self.walkTree(self.env[node[1]])
+            except:
+                print("The called function is not defined")
+
+        if node[0] == 'process_def_parameters':
+            if 'var_assign' in node[3]:
+                print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
+            else:
+                if node[2] in node[3]:
+                    self.env[node[1]] = tuple([node[3],node[2]])
+                    print("Se guardo")
+                else:
+                    print("Error, the defined procedure does not use the set parameter")
+
+        if node[0] == 'process_call_parameters':
+            try:
+                x = list(self.env[node[1]])
+                y = list(x[0])
+                z = x[1]
+                cont = 0
+                while z != y[cont]:
+                    cont+=1
+                y[cont] = node[2]
+                return self.walkTree(tuple(y))
+            except:
+                print("The called function is not defined")
+
+
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
         elif node[0] == 'sub':
@@ -371,5 +428,4 @@ if __name__ == '__main__':
             break
         if text:
             BasicExecute(tree, env)
-
 #            print(tree)
