@@ -7,7 +7,7 @@ class BasicLexer(Lexer):
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
                 MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO}
 
-    ignore = " "
+    ignore = " \t"
 
 #----Simbolos------
     SEMI = r";"
@@ -36,7 +36,7 @@ class BasicLexer(Lexer):
     ENTONS = r"Entons"
     SINO = r"SiNo"
     FINENCASO = r"Fin-EnCaso"
-    VAR = r"[a-zA-Z_][a-zA-Z0-9_]*"
+    VAR = r"[a-zA-Z_][a-zA-Z0-9_@#]*"
 
 
     @_(r"\d+")
@@ -55,7 +55,8 @@ class BasicParser(Parser):
     def statement(self, p):
         pass
 
-    @_('expr')
+
+    @_('expr SEMI')
     def statement(self, p):
         return (p.expr)
 
@@ -169,38 +170,34 @@ class BasicParser(Parser):
     def var(self, p):
         return ('var', p.VAR)
 
-    @_('INC PARENTHESIS_LEFT statement COMA statement PARENTHESIS_RIGHT')
+    @_('INC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
     def statement(self, p):
-        return ('fun_call', p.INC, p.statement0, p.statement1)
+        return ('fun_call', p.INC, p.var, p.expr)
 
-    @_('DEC PARENTHESIS_LEFT statement COMA statement PARENTHESIS_RIGHT')
+    @_('DEC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
     def statement(self, p):
-        return ('fun_call', p.DEC, p.statement0, p.statement1)
+        return ('fun_call', p.DEC, p.var, p.expr)
 
-    @_('INI PARENTHESIS_LEFT statement COMA statement PARENTHESIS_RIGHT')
+    @_('INI PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
     def statement(self, p):
-        return ('fun_call', p.INI, p.statement0, p.statement1)
+        return ('fun_call', p.INI, p.var, p.expr)
 
-    @_('MOVER PARENTHESIS_LEFT statement PARENTHESIS_RIGHT')
+    @_('MOVER PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
     def statement(self, p):
-        return ('fun_call', p.MOVER, p.statement)
+        return ('fun_call', p.MOVER, p.expr)
 
     @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
     def statement(self, p):
         return ('fun_call', p.ALEATORIO)
 
     def error(self, p):
-        print("Parsing Error! Maybe you mixed the order or misspelled something")
+        return ("error", "Parsing Error! Maybe you mixed the order or misspelled something")
 
 class BasicExecute:
 
-    def __init__(self, tree, env):
+    def __init__(self, env):
         self.env = env
-        result = self.walkTree(tree)
-        if result is not None and isinstance(result, int):
-            print(result)
-        if isinstance(result, str) and result[0] == '"':
-            print(result)
+
 
     def walkTree(self, node):
 
@@ -223,6 +220,9 @@ class BasicExecute:
             return node[1]
 
         if node[0] == 'str':
+            return node[1]
+
+        if node[0] == "error":
             return node[1]
 
         if node[0] == 'EnCasoA':
@@ -260,37 +260,37 @@ class BasicExecute:
             try:
                 return self.walkTree(node[1]) > self.walkTree(node[2])
             except:
-                print("Error")
+                return("Error in comparation. Check if the data types are comparable.")
 
         if node[0] == "Lesser":
             try:
                 return self.walkTree(node[1]) < self.walkTree(node[2])
             except:
-                print("Error")
+                return("Error in comparation. Check if the data types are comparable.")
 
         if node[0] == "LesserEq":
             try:
                 return self.walkTree(node[1]) <= self.walkTree(node[2])
             except:
-                print("Error")
+                return("Error in comparation. Check if the data types are comparable.")
         if node[0] == "GreaterEq":
             try:
                 return self.walkTree(node[1]) >= self.walkTree(node[2])
             except:
-                print("Error")
+                return "Error in comparation. Check if the data types are comparable."
 
         if node[0] == 'fun_call':
             if node[1] == 'Inc':
                 self.env[node[2][1]] = self.walkTree(node[2]) + self.walkTree(node[3])
-                print(self.env[node[2][1]])
+                return(self.env[node[2][1]])
             elif node[1] == 'Dec':
                 self.env[node[2][1]] = self.walkTree(node[2]) - self.walkTree(node[3])
-                print(self.env[node[2][1]])
+                return(self.env[node[2][1]])
             elif node[1] == 'Ini':
                 self.env[node[2][1]] = self.walkTree(node[3])
-                print(self.env[node[2][1]])
+                return(self.env[node[2][1]])
             else:
-                print("Las funciones no estan definidas")
+                return("Function not defined")
 
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
@@ -303,13 +303,14 @@ class BasicExecute:
 
         if node[0] == 'var_assign':
             self.env[node[1]] = self.walkTree(node[2])
-            return node[1]
+            return
         if node[0] == 'var':
             try:
                 return self.env[node[1]]
             except LookupError:
-                print("Undefined variable '"+node[1]+"' found!")
-                return
+                print("not found")
+                return "Undefined variable '"+node[1]+"' found!"
+
 
         if node[0] == 'for_loop':
             if node[1][0] == 'for_loop_setup':
@@ -370,6 +371,8 @@ if __name__ == '__main__':
         except EOFError:
             break
         if text:
+            lex = lexer.tokenize(text)
+            tree = parser.parse(lex)
             BasicExecute(tree, env)
 
 #            print(tree)

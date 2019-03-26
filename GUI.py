@@ -1,17 +1,23 @@
 from tkinter import *
+from DodeFast import *
+from CodeManager import *
 
 #-----------------CONSTANTS---------------------
 
 WIDTH = 500
 HEIGHT = 600
 
+#-----------------------------------------------
 
 class Window(Frame):
 
-    def __init__(self, master=None):
+    def __init__(self, master, DFInterpreter):
         Frame.__init__(self, master, background = "black")
         self.master = master
         self.init_window()
+        self.DFInterpreter = DFInterpreter
+        self.lexer = BasicLexer()
+        self.parser = BasicParser()
 
     def init_window(self):
 
@@ -65,7 +71,7 @@ class Window(Frame):
         edit.add_command(label="Redo")
         edit.add_command(label="Show Text")
 
-        root.bind('<Return>', self.showText)
+        self.master.bind('<Return>', self.showText)
 
 
         #added "file" to our menu
@@ -75,20 +81,112 @@ class Window(Frame):
     def client_exit(self):
         exit()
 
+
+    def runCode(self, textInput):
+
+        self.DFInterpreter.env = {}
+
+
+        self.txt += ">>> ------------------Code block executed!------------------" + "\n"
+
+        text = textInput.get("1.0",END)
+
+        if text:
+
+            lines = manageCode(text)
+
+            print(lines)
+            try:
+                for line in lines:
+                    if line:
+                        try:
+                            lex = self.lexer.tokenize(line)
+                            tree = self.parser.parse(lex)
+                        except AttributeError:
+                            self.txt += ">>> Expression in code block not found!" + "\n"
+                            break
+                        except:
+                            self.txt += ">>> Illegal token in code block!" + "\n"
+                            break
+
+
+                        print(tree)
+                        result = self.DFInterpreter.walkTree(tree)
+
+
+            except:
+                self.txt += ">>> Semantic error on code block! Check your code because something is not right." + "\n"
+
+
+            self.e.delete(0,END)
+
+            self.text.config(state = NORMAL)
+
+            self.text.delete(1.0, END)
+
+            self.text.insert(END, self.txt)
+
+            self.text.config(state = DISABLED)
+
+            self.text.yview(END)
+
+    def runCode(self, event, textInput):
+
+        self.DFInterpreter.env = {}
+
+
+        self.txt += ">>> ------------------Code block executed!------------------" + "\n"
+
+        text = textInput.get("1.0",END)
+
+        if text:
+
+            lines = manageCode(text)
+
+            print(lines)
+            try:
+                for line in lines:
+                    if line:
+                        try:
+                            lex = self.lexer.tokenize(line)
+                            tree = self.parser.parse(lex)
+                        except AttributeError:
+                            self.txt += ">>> Expression in code block not found!" + "\n"
+                            break
+                        except:
+                            self.txt += ">>> Illegal token in code block!" + "\n"
+                            break
+
+
+                        print(tree)
+                        result = self.DFInterpreter.walkTree(tree)
+
+
+            except:
+                self.txt += ">>> Semantic error on code block! Check your code because something is not right." + "\n"
+
+
+            self.e.delete(0,END)
+
+            self.text.config(state = NORMAL)
+
+            self.text.delete(1.0, END)
+
+            self.text.insert(END, self.txt)
+
+            self.text.config(state = DISABLED)
+
+            self.text.yview(END)
+
+
+
     def newFile(self):
         newWindow = Toplevel(self)
 
 
         newWindow.config(bg = "black")
 
-        menu = Menu(newWindow, background='black', foreground='white',
-               activebackground='black', activeforeground='white')
-        newWindow.config(menu=menu)
-
-        menu.add_cascade(label = "File")
-
-
-        text = Text(newWindow, bg = "black", fg = "white")
+        text = Text(newWindow, bg = "black", fg = "white", insertbackground = "white")
 
         scroll = Scrollbar(newWindow, command= text.yview)
         scroll.grid(column = 1 , row = 0,sticky = E)
@@ -98,10 +196,49 @@ class Window(Frame):
 
         scroll.config(command= text.yview)
 
+        menu = Menu(newWindow, background='black', foreground='white',
+               activebackground='black', activeforeground='white')
+        newWindow.config(menu=menu)
+
+        file = Menu(menu, background='black', foreground='white',
+               activebackground='black', activeforeground='white')
+
+        file.add_command(label= "Run", command = lambda: self.runCode(text))
+
+        newWindow.bind('<Control-F5>', lambda event : self.runCode(event, text))
+
+        menu.add_cascade(label = "File", menu = file)
+
+
 
 
     def showText(self, event):
+
+        text = self.e.get()
+
         self.txt += ">>> " + self.e.get() + "\n"
+
+
+        if text:
+
+            lines = manageCode(text)
+
+            for line in lines:
+                if line:
+                    try:
+                        lex = self.lexer.tokenize(line)
+                        tree = self.parser.parse(lex)
+                    except AttributeError:
+                        self.txt += ">>> Expression not found!" + "\n"
+                        break
+                    except:
+                        self.txt += ">>> Illegal token!" + "\n"
+                        break
+
+                    result = self.DFInterpreter.walkTree(tree)
+                    if result != None:
+                        self.txt += str(result) + "\n"
+
 
         self.e.delete(0,END)
 
@@ -114,10 +251,3 @@ class Window(Frame):
         self.text.config(state = DISABLED)
 
         self.text.yview(END)
-
-root = Tk()
-app  = Window(root)
-
-root.config(bg = "black")
-
-root.mainloop()
