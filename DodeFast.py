@@ -5,7 +5,7 @@ class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
-                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO}
+                MINUS, INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO, REPITA, HASTAENCONTRAR, DESDE, HASTA, HAGA, FINDESDE}
 
     ignore = " \t"
 
@@ -22,13 +22,18 @@ class BasicLexer(Lexer):
     COMA = r","
     PARENTHESIS_LEFT = r"\("
     PARENTHESIS_RIGHT = r"\)"
+    TWO_POINTS = r":"
 
 #----Palabras------
+    INICIO = r'Inicio'
+    FINAL = r'Final'
     INC = r'Inc'
     DEC = r'Dec'
     INI = r'Ini'
     MOVER = r'Mover'
     ALEATORIO = r'Aleatorio'
+    PROC = r'Proc'
+    LLAMAR = r'Llamar'
     DECLARATION = r"DCL"
     ASSIGNATION = "DEFAULT"
     ENCASO = r"EnCaso"
@@ -36,7 +41,13 @@ class BasicLexer(Lexer):
     ENTONS = r"Entons"
     SINO = r"SiNo"
     FINENCASO = r"Fin-EnCaso"
-    VAR = r"[a-zA-Z_][a-zA-Z0-9_@#]*"
+    REPITA = 'Repita'
+    HASTAENCONTRAR ='HastaEncontrar'
+    DESDE = 'Desde'
+    HASTA = 'Hasta'
+    HAGA = 'Haga'
+    FINDESDE= 'Fin-Desde'
+    VAR = r"[a-zA-Z_][a-zA-Z0-9_]*"
 
 
     @_(r"\d+")
@@ -63,6 +74,14 @@ class BasicParser(Parser):
     @_('var_assign')
     def statement(self, p):
         return p.var_assign
+
+    @_('REPITA LBRACK statement RBRACK HASTAENCONTRAR Evaluation SEMI')
+    def statement(self,p):
+        return ('while_loop', p.statement, p.Evaluation)
+
+    @_('DESDE var EQ expr HASTA expr HAGA statement FINDESDE')
+    def statement(self, p):
+        return ('for_loop', p.var, p.expr0, p.expr1, p.statement)
 
     @_('EnCasoA')
     def statement(self, p):
@@ -190,6 +209,22 @@ class BasicParser(Parser):
     def statement(self, p):
         return ('fun_call', p.ALEATORIO)
 
+    @_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
+    def statement(self, p):
+        return ('process_def', p.VAR, p.statement)
+
+    @_('PROC VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
+    def statement(self, p):
+        return ('process_def_parameters', p.VAR, p.expr, p.statement)
+
+    @_('LLAMAR VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('process_call', p.VAR)
+
+    @_('LLAMAR VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
+    def statement(self, p):
+        return ('process_call_parameters', p.VAR, p.expr)
+
     def error(self, p):
         return ("error", "Parsing Error! Maybe you mixed the order or misspelled something")
 
@@ -292,6 +327,42 @@ class BasicExecute:
             else:
                 return("Function not defined")
 
+        if node[0] == 'process_def':
+            if 'var_assign' in node[2]:
+                print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
+            else:
+                self.env[node[1]] = node[2]
+
+        if node[0] == 'process_call':
+            try:
+                return self.walkTree(self.env[node[1]])
+            except:
+                print("The called function is not defined")
+
+        if node[0] == 'process_def_parameters':
+            if 'var_assign' in node[3]:
+                print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
+            else:
+                if node[2] in node[3]:
+                    self.env[node[1]] = tuple([node[3],node[2]])
+                    print("Se guardo")
+                else:
+                    print("Error, the defined procedure does not use the set parameter")
+
+        if node[0] == 'process_call_parameters':
+            try:
+                x = list(self.env[node[1]])
+                y = list(x[0])
+                z = x[1]
+                cont = 0
+                while z != y[cont]:
+                    cont+=1
+                y[cont] = node[2]
+                return self.walkTree(tuple(y))
+            except:
+                print("The called function is not defined")
+
+
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
         elif node[0] == 'sub':
@@ -308,29 +379,41 @@ class BasicExecute:
             try:
                 return self.env[node[1]]
             except LookupError:
-                print("not found")
-                return "Undefined variable '"+node[1]+"' found!"
+                print("Undefined variable '"+node[1]+"' found!")
+                return
+        if node[0]== 'while_loop':
+            loop_sentence = node[1][1]
+            loop_setup = self.walkTree(node[2])
+            val= node[2][1][1]
+            i= self.walkTree(node[2][1])
+            print (i)
+            while True:
+                #self.walkTree(loop_sentence)
+                print(loop_sentence)
+                if self.walkTree(node[2]):
+                    print ("Se cumple la condición")
+                    break
+                i+=1
+                del env[node[2][1][1]]
+                self.env[val] = i
 
 
         if node[0] == 'for_loop':
-            if node[1][0] == 'for_loop_setup':
-                loop_setup = self.walkTree(node[1])
+            #return ('for_loop', p.var, p.expr, p.expr, p.statement)
+            try:
+                loop_count = self.env[node[2][0]]
+            except:
+                loop_count = node[2][1]
 
-                loop_count = self.env[loop_setup[0]]
-                loop_limit = loop_setup[1]
-
-                for i in range(loop_count+1, loop_limit+1):
-                    res = self.walkTree(node[2])
-                    if res is not None:
-                        print(res)
-                    self.env[loop_setup[0]] = i
-                del self.env[loop_setup[0]]
-
-        if node[0] == 'for_loop_setup':
-            return (self.walkTree(node[1]), self.walkTree(node[2]))
+            val = node[2][0]
+            loop_limit = node[3][1]
+            res = self.walkTree(node[2])
+            for i in range(loop_count+1, loop_limit+1):
+                if res is not None:
+                    print(res)
 
 #----------------------Lexing run--------------------
-"""
+'''
 if __name__ == '__main__':
     lexer = BasicLexer()
     env = {}
@@ -358,7 +441,7 @@ if __name__ == '__main__':
         if text:
             tree = parser.parse(lexer.tokenize(text))
             print(tree)
-"""
+    '''
 #---------------------Full run-----------------------
 
 if __name__ == '__main__':
@@ -374,5 +457,4 @@ if __name__ == '__main__':
             lex = lexer.tokenize(text)
             tree = parser.parse(lex)
             BasicExecute(tree, env)
-
 #            print(tree)
