@@ -82,7 +82,7 @@ class Window(Frame):
         exit()
 
 
-    def runCode(self, textInput):
+    def runCodeA(self, textInput):
 
         self.DFInterpreter.env = {}
 
@@ -161,6 +161,10 @@ class Window(Frame):
                         print(tree)
                         result = self.DFInterpreter.walkTree(tree)
 
+                        if isinstance(result, str):
+                            self.txt += ">>> "+ result + "\n"
+
+
 
             except:
                 self.txt += ">>> Semantic error on code block! Check your code because something is not right." + "\n"
@@ -203,7 +207,7 @@ class Window(Frame):
         file = Menu(menu, background='black', foreground='white',
                activebackground='black', activeforeground='white')
 
-        file.add_command(label= "Run", command = lambda: self.runCode(text))
+        file.add_command(label= "Run", command = lambda: self.runCodeA(text))
 
         newWindow.bind('<Control-F5>', lambda event : self.runCode(event, text))
 
@@ -228,8 +232,9 @@ class Window(Frame):
                     try:
                         lex = self.lexer.tokenize(line)
                         tree = self.parser.parse(lex)
+                        print(tree)
                     except AttributeError:
-                        self.txt += ">>> Expression not found!" + "\n"
+                        self.txt += ">>> Expression not found! Check if everything is written correctly" + "\n"
                         break
                     except:
                         self.txt += ">>> Illegal token!" + "\n"
