@@ -103,7 +103,7 @@ class Window(Frame):
                             lex = self.lexer.tokenize(line)
                             tree = self.parser.parse(lex)
                         except AttributeError:
-                            self.txt += ">>> Expression in code block not found!" + "\n"
+                            self.txt += ">>> Syntax Error! Expression in code block not found!" + "\n"
                             break
                         except:
                             self.txt += ">>> Illegal token in code block!" + "\n"
@@ -113,9 +113,16 @@ class Window(Frame):
                         print(tree)
                         result = self.DFInterpreter.walkTree(tree)
 
+                        try:
+                            if result[0] == "print":
+                                self.txt += str(result[1]) + "\n"
+                                print("here")
+                        except:
+                            pass
+
 
             except:
-                self.txt += ">>> Semantic error on code block! Check your code because something is not right." + "\n"
+                self.txt += ">>> Semantic error on code block!\nCheck your code because something is not right." + "\n"
 
 
             self.e.delete(0,END)
@@ -151,7 +158,7 @@ class Window(Frame):
                             lex = self.lexer.tokenize(line)
                             tree = self.parser.parse(lex)
                         except AttributeError:
-                            self.txt += ">>> Expression in code block not found!" + "\n"
+                            self.txt += ">>> Syntax Error! Expression in code block not found!" + "\n"
                             break
                         except:
                             self.txt += ">>> Illegal token in code block!" + "\n"
@@ -161,13 +168,16 @@ class Window(Frame):
                         print(tree)
                         result = self.DFInterpreter.walkTree(tree)
 
-                        if isinstance(result, str):
-                            self.txt += ">>> "+ result + "\n"
-
+                        try:
+                            if result[0] == "print":
+                                self.txt += str(result[1]) + "\n"
+                                print("here")
+                        except:
+                            pass
 
 
             except:
-                self.txt += ">>> Semantic error on code block! Check your code because something is not right." + "\n"
+                self.txt += ">>> Semantic error on code block!\nCheck your code because something is not right." + "\n"
 
 
             self.e.delete(0,END)
@@ -213,9 +223,6 @@ class Window(Frame):
 
         menu.add_cascade(label = "File", menu = file)
 
-
-
-
     def showText(self, event):
 
         text = self.e.get()
@@ -234,7 +241,7 @@ class Window(Frame):
                         tree = self.parser.parse(lex)
                         print(tree)
                     except AttributeError:
-                        self.txt += ">>> Expression not found! Check if everything is written correctly" + "\n"
+                        self.txt += ">>> Syntax Error! Expression not found! \nCheck if everything is written correctly" + "\n"
                         break
                     except:
                         self.txt += ">>> Illegal token!" + "\n"

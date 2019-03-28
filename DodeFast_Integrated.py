@@ -2,7 +2,7 @@ from DodeFast import *
 from GUI import *
 from tkinter import *
 
-env = {}
+env = {} 
 
 DFInterpreter = BasicExecute(env)
 

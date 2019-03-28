@@ -3,7 +3,7 @@ from sly import Parser as Parser
 
 class BasicLexer(Lexer):
 
-    tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, ENTONS, SINO, FINENCASO, VAR, INT,
+    tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, PRINT, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
                 MINUS, TWO_POINTS, INICIO, FINAL, PROC, LLAMAR,
                 INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO,
@@ -49,6 +49,7 @@ class BasicLexer(Lexer):
     HASTA = 'Hasta'
     HAGA = 'Haga'
     FINDESDE= 'Fin-Desde'
+    PRINT = "Print"
     VAR = r"[a-zA-Z_][a-zA-Z0-9_]*"
 
 
@@ -68,29 +69,37 @@ class BasicParser(Parser):
     def statement(self, p):
         pass
 
+    @_('sentencia')
+    def statement(self,p):
+        return p.sentencia
+
+    @_("statement sentencia")
+    def statement(self,p):
+
+        return ["multStatements", p.statement] + [p.sentencia]
 
     @_('expr SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return (p.expr)
 
     @_('var_assign')
-    def statement(self, p):
+    def sentencia(self, p):
         return p.var_assign
 
     @_('REPITA LBRACK statement RBRACK HASTAENCONTRAR Evaluation SEMI')
-    def statement(self,p):
+    def sentencia(self,p):
         return ('while_loop', p.statement, p.Evaluation)
 
     @_('DESDE var EQ expr HASTA expr HAGA LBRACK statement RBRACK FINDESDE SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('for_loop', p.var, p.expr0, p.expr1, p.statement)
 
     @_('EnCasoA')
-    def statement(self, p):
+    def sentencia(self, p):
         return p.EnCasoA
 
     @_('EnCasoB')
-    def statement(self, p):
+    def sentencia(self, p):
         return p.EnCasoB
 
     @_('ENCASO CuandoA SiNo FINENCASO SEMI')
@@ -191,40 +200,44 @@ class BasicParser(Parser):
     def var(self, p):
         return ('var', p.VAR)
 
+    @_('PRINT PARENTHESIS_LEFT expr PARENTHESIS_RIGHT SEMI')
+    def sentencia(self, p):
+        return ("print", p.expr)
+
     @_('INC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('fun_call', p.INC, p.var, p.expr)
 
     @_('DEC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('fun_call', p.DEC, p.var, p.expr)
 
     @_('INI PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('fun_call', p.INI, p.var, p.expr)
 
     @_('MOVER PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('fun_call', p.MOVER, p.expr)
 
     @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('fun_call', p.ALEATORIO)
 
     @_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('process_def', p.VAR, p.statement)
 
     @_('PROC VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('process_def_parameters', p.VAR, p.expr, p.statement)
 
     @_('LLAMAR VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('process_call', p.VAR)
 
     @_('LLAMAR VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
-    def statement(self, p):
+    def sentencia(self, p):
         return ('process_call_parameters', p.VAR, p.expr)
 
     def error(self, p):
@@ -245,6 +258,14 @@ class BasicExecute:
 
         if node is None:
             return None
+
+        if node[0] == "multStatements":
+            print(node)
+            result = []
+            for i in range(1, len(node)):
+                result.append(self.walkTree(node[i]))
+
+            return result
 
         if node[0] == 'program':
             if node[1] == None:
@@ -286,6 +307,9 @@ class BasicExecute:
 
         if node[0] == "Cuando":
             return self.walkTree(node[1])
+
+        if node[0] == "print":
+            return ("print", self.walkTree(node[1]))
 
         if node[0] == "SiNo":
             return self.walkTree(node[1])
