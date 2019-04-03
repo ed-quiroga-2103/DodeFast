@@ -50,7 +50,7 @@ class BasicLexer(Lexer):
     HAGA = 'Haga'
     FINDESDE= 'Fin-Desde'
     PRINT = "Print"
-    VAR = r"[a-zA-Z_][a-zA-Z0-9_]*"
+    VAR = r"[a-zA-Z_][a-zA-Z0-9_@#]*"
 
 
     @_(r"\d+")
@@ -65,42 +65,156 @@ class BasicParser(Parser):
 
     def __init__(self):
         self.env = { }
-    @_('')
-    def statement(self, p):
-        pass
-
-    @_('sentencia')
-    def statement(self,p):
-        return p.sentencia
-
-    @_("statement sentencia")
-    def statement(self,p):
-
-        return ["multStatements", p.statement] + [p.sentencia]
 
     @_('expr SEMI')
-    def sentencia(self, p):
+    def statement(self,p):
+        return (p.expr)
+
+    @_('INICIO TWO_POINTS LBRACK Bloque RBRACK FINAL SEMI DecFunc')
+    def statement(self,p):
+      return ("inicio", p.DecFunc, p.Bloque)
+
+    @_('declaracion Bloque')
+    def Bloque(self,p):
+      return ["multStatements", p.declaracion] + [p.Bloque]
+
+    @_('expr SEMI')
+    def declaracion(self, p):
         return (p.expr)
 
     @_('var_assign')
-    def sentencia(self, p):
+    def declaracion(self, p):
         return p.var_assign
 
-    @_('REPITA LBRACK statement RBRACK HASTAENCONTRAR Evaluation SEMI')
-    def sentencia(self,p):
-        return ('while_loop', p.statement, p.Evaluation)
+    @_('func_call Bloque')
+    def Bloque(self,p):
+      return ["multStatements", p.func_call] + [p.Bloque]
 
-    @_('DESDE var EQ expr HASTA expr HAGA LBRACK statement RBRACK FINDESDE SEMI')
-    def sentencia(self, p):
-        return ('for_loop', p.var, p.expr0, p.expr1, p.statement)
+    @_('')
+    def Bloque(self,p):
+      pass
+
+    @_('Proc SEMI DecFunc')
+    def DecFunc(self,p):
+        return ['multi_proc', p.Proc] + [p.DecFunc]
+
+    @_('')
+    def DecFunc(self,p):
+        pass
+
+    @_('PROC VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT LBRACK func_Bloque RBRACK')
+    def Proc(self,p):
+        parametros = p.Parametros
+        return ('multi_parameters', p.VAR, parametros, p.func_Bloque)
+
+    @_('parametro Parametros')
+    def Parametros(self,p):
+        return ["parametros",p.parametro] + [p.Parametros]
+
+    @_('COMA parametro Parametros')
+    def Parametros(self,p):
+        return [p.parametro] + [p.Parametros]
+
+    @_('')
+    def Parametros(self,p):
+        pass
+
+    @_('expr')
+    def parametro(self,p):
+        return p.expr
+
+    @_('func_Dec INICIO TWO_POINTS func_expr FINAL SEMI')
+    def func_Bloque(self,p):
+        return
+
+    @_('var_assign func_Dec')
+    def func_Dec(self,p):
+        return
+
+    @_('')
+    def func_Dec(self,p):
+        pass
+
+    @_('funciones func_expr')
+    def func_expr(self,p):
+        return
+
+    @_('loops func_expr')
+    def func_expr(self,p):
+        return
+
+    @_('')
+    def func_expr(self,p):
+      pass
+
+    @_('Ini')
+    def funciones(self,p):
+      return p.Ini
+
+    @_('Inc')
+    def funciones(self,p):
+        return p.Inc
+
+    @_('Dec')
+    def funciones(self,p):
+        return p.Dec
+
+    @_('Mover')
+    def funciones(self,p):
+      return p.Mover
+
+    @_('Aleatorio')
+    def funciones(self,p):
+      return p.Aleatorio
+
+    @_('Condicion')
+    def funciones(self,p):
+      return p.Condicion
 
     @_('EnCasoA')
-    def sentencia(self, p):
-        return p.EnCasoA
+    def Condicion(self,p):
+      return p.EnCasoA
 
     @_('EnCasoB')
-    def sentencia(self, p):
-        return p.EnCasoB
+    def Condicion(self,p):
+      return p.EnCasoB
+
+    @_('Repita')
+    def loops(self,p):
+      return p.Repita
+
+    @_('Desde')
+    def loops(self,p):
+      return p.Desde
+
+    @_('REPITA LBRACK func_expr RBRACK HASTAENCONTRAR Evaluation SEMI')
+    def Repita(self,p):
+        return ('while_loop', p.statement, p.Evaluation)
+
+    @_('DESDE var EQ expr HASTA expr HAGA LBRACK func_expr RBRACK FINDESDE SEMI')
+    def Desde(self, p):
+        return ('for_loop', p.var, p.expr0, p.expr1, p.statement)
+
+
+    @_('INC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
+    def Inc(self, p):
+        return ('fun_call', p.INC, p.var, p.expr)
+
+    @_('DEC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
+    def Dec(self, p):
+        return ('fun_call', p.DEC, p.var, p.expr)
+
+    @_('INI PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
+    def Ini(self, p):
+        return ('fun_call', p.INI, p.var, p.expr)
+
+    @_('MOVER PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
+    def Mover(self, p):
+        return ('fun_call', p.MOVER, p.expr)
+
+    @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
+    def Aleatorio(self, p):
+        return ('fun_call', p.ALEATORIO)
 
     @_('ENCASO CuandoA SiNo FINENCASO SEMI')
     def EnCasoA(self, p):
@@ -148,11 +262,11 @@ class BasicParser(Parser):
         return [p.Cond, self.X, p.expr]
 
 
-    @_('ENTONS LBRACK statement RBRACK')
+    @_('ENTONS LBRACK func_expr RBRACK')
     def Entons(self, p):
         return p.statement
 
-    @_('SINO LBRACK statement RBRACK')
+    @_('SINO LBRACK func_expr RBRACK')
     def SiNo(self, p):
         return ("SiNo", p.statement)
 
@@ -200,45 +314,18 @@ class BasicParser(Parser):
     def var(self, p):
         return ('var', p.VAR)
 
-    @_('PRINT PARENTHESIS_LEFT expr PARENTHESIS_RIGHT SEMI')
-    def sentencia(self, p):
-        return ("print", p.expr)
+    #Cambiar a funcDef
+    #@_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
+    #def sentencia(self, p):
+    #    return ('process_def', p.VAR, p.statement)
+    #Cambiar a funcDef
+    #@_('PROC VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
+    #def sentencia(self, p):
+    #    return ('process_def_parameters', p.VAR, p.expr, p.statement)
 
-    @_('INC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
-    def sentencia(self, p):
-        return ('fun_call', p.INC, p.var, p.expr)
-
-    @_('DEC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
-    def sentencia(self, p):
-        return ('fun_call', p.DEC, p.var, p.expr)
-
-    @_('INI PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
-    def sentencia(self, p):
-        return ('fun_call', p.INI, p.var, p.expr)
-
-    @_('MOVER PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
-    def sentencia(self, p):
-        return ('fun_call', p.MOVER, p.expr)
-
-    @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
-    def sentencia(self, p):
-        return ('fun_call', p.ALEATORIO)
-
-    @_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
-    def sentencia(self, p):
-        return ('process_def', p.VAR, p.statement)
-
-    @_('PROC VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
-    def sentencia(self, p):
-        return ('process_def_parameters', p.VAR, p.expr, p.statement)
-
-    @_('LLAMAR VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT')
-    def sentencia(self, p):
-        return ('process_call', p.VAR)
-
-    @_('LLAMAR VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
-    def sentencia(self, p):
-        return ('process_call_parameters', p.VAR, p.expr)
+    @_('LLAMAR VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT')
+    def func_call(self, p):
+        return ('process_call', p.VAR, p.Parametros)
 
     def error(self, p):
         return ("error", "Parsing Error! Maybe you mixed the order or misspelled something")
@@ -259,11 +346,15 @@ class BasicExecute:
         if node is None:
             return None
 
+        if node[0] ==  "inicio":
+            self.walkTree(node[1])
+            self.walkTree(node[2])
+
         if node[0] == "multStatements":
-            print(node)
             result = []
             for i in range(1, len(node)):
-                result.append(self.walkTree(node[i]))
+                res = self.walkTree(node[i])
+                result.append(res)
 
             return result
 

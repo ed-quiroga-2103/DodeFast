@@ -165,10 +165,14 @@ class Window(Frame):
                             break
 
 
-                        print(tree)
+
                         result = self.DFInterpreter.walkTree(tree)
+                        print("Resultado " +str(result))
 
                         try:
+                            if isinstance(result, list):
+                                self.txt += str(result) + "\n"
+
                             if result[0] == "print":
                                 self.txt += str(result[1]) + "\n"
                                 print("here")
@@ -239,7 +243,9 @@ class Window(Frame):
                     try:
                         lex = self.lexer.tokenize(line)
                         tree = self.parser.parse(lex)
+
                         print(tree)
+                        
                     except AttributeError:
                         self.txt += ">>> Syntax Error! Expression not found! \nCheck if everything is written correctly" + "\n"
                         break
@@ -248,6 +254,10 @@ class Window(Frame):
                         break
 
                     result = self.DFInterpreter.walkTree(tree)
+                    print(result)
+                    if isinstance(result, list):
+                        self.txt += str(result) + "\n"
+
                     if result != None:
                         self.txt += str(result) + "\n"
 

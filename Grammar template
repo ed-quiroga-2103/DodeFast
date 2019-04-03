@@ -1,0 +1,232 @@
+@_(INICIO TWO_POINTS LBRACK Bloque RBRACK Final SEMI DecFunc)
+def statement(self,p):
+  return (p.DecFunc, p.Bloque)
+
+@_('declaracion Bloque')
+def Bloque(self,p):
+  return ["multStatements", p.Bloque] + [p.declaracion]
+
+@_('expr SEMI')
+def declaracion(self, p):
+    return (p.expr)
+
+@_('var_assign')
+def declaracion(self, p):
+    return p.var_assign
+
+@_('func_call Bloque')
+def Bloque(self,p):
+  return ["multStatements", p.Bloque] + [p.func_call]
+
+@_('')
+def Bloque(self,p):
+  pass
+
+@_('Proc SEMI DecFunc'):
+def DecFunc(self,p):
+
+  #Agregar return de definicion de proceso
+
+  return
+
+@_('')
+def DecFunc(self,p):
+  pass
+
+@_('PROC VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT LBRACK func_Bloque RBRACK')
+def Proc(self,p):
+
+  #Agregar return de definicion de funciones
+  return
+
+@_('parametro Parametros')
+def Parametros(self,p):
+
+  #Agregar return de Parametros
+  return
+
+@_('COMA parametro Parametros')
+def Parametros(self,p):
+  return
+
+@_('func_Dec INICIO TWO_POINTS func_expr FINAL SEMI')
+def func_Bloque(self,p):
+  return
+
+@_('var_assign func_Dec')
+def func_Dec(self,p):
+  return
+
+@_('')
+def func_Dec(self,p):
+  return
+
+@_('funciones func_expr')
+def func_expr(self,p):
+  return
+
+@_('loops func_expr')
+def func_expr(self,p):
+  return
+
+@_('')
+def func_expr(self,p):
+  return
+
+@_('Ini')
+def funciones(self,p):
+  return p.Ini
+
+@_('Inc')
+def funciones(self,p):
+return p.Inc
+
+@_('Dec')
+def funciones(self,p):
+return p.Dec
+
+@_('Mover')
+def funciones(self,p):
+  return p.Mover
+
+@_('Aleatorio')
+def funciones(self,p):
+  return p.Aleatorio
+
+@_('Condicion')
+def funciones(self,p):
+  return p.Condicion
+
+@_('EnCasoA')
+def Condicion(self,p):
+  return p.EnCasoA
+
+@_('EnCasoB')
+def Condicion(self,p):
+  return p.EnCasoB
+
+@_('Repita')
+def loops(self,p):
+  return p.Repita
+
+@_('Desde')
+def loops(self,p):
+  return p.Desde
+
+@_('INC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
+  def Inc(self, p):
+      return ('fun_call', p.INC, p.var, p.expr)
+
+@_('DEC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
+  def Dec(self, p):
+      return ('fun_call', p.DEC, p.var, p.expr)
+
+@_('INI PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
+def Ini(self, p):
+  return ('fun_call', p.INI, p.var, p.expr)
+
+@_('MOVER PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
+def Mover(self, p):
+  return ('fun_call', p.MOVER, p.expr)
+
+@_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
+def Aleatorio(self, p):
+  return ('fun_call', p.ALEATORIO)
+
+@_('ENCASO CuandoA SiNo FINENCASO SEMI')
+def EnCasoA(self, p):
+    return ("EnCasoA", p.CuandoA, p.SiNo)
+
+@_('ENCASO var CuandoC SiNo FINENCASO SEMI')
+def EnCasoB(self,p):
+    self.X = p.var
+    print(self.X)
+    tree = ["EnCasoB", p.CuandoC, p.SiNo]
+    tree[1][0][1][1] = self.X
+    return tree
+
+@_('CuandoB CuandoA')
+def CuandoA(self, p):
+    return [p.CuandoB] + p.CuandoA
+
+@_('CuandoB')
+def CuandoA(self, p):
+    return [p.CuandoB]
+
+@_('CUANDO Evaluation Entons')
+def CuandoB(self, p):
+    return ("Cuando",p.Evaluation, p.Entons)
+
+
+@_('CuandoD CuandoC')
+def CuandoC(self, p):
+    return [p.CuandoD] + p.CuandoC
+
+@_('CuandoD')
+def CuandoC(self, p):
+    return [p.CuandoD]
+
+@_('CUANDO EvaluationB Entons')
+def CuandoD(self, p):
+    return ["Cuando", p.EvaluationB, p.Entons]
+
+@_('var Cond expr')
+def Evaluation(self,p):
+    return(p.Cond, p.var, p.expr)
+
+@_('Cond expr')
+def EvaluationB(self,p):
+    return [p.Cond, self.X, p.expr]
+
+
+@_('ENTONS LBRACK statement RBRACK')
+def Entons(self, p):
+    return p.statement
+
+@_('SINO LBRACK statement RBRACK')
+def SiNo(self, p):
+    return ("SiNo", p.statement)
+
+@_('EQ')
+def Cond(self, p):
+    return "Equals"
+
+@_('GREATEREQ')
+def Cond(self, p):
+    return "GreaterEq"
+
+@_('LESSEREQ')
+def Cond(self, p):
+    return "LesserEq"
+
+@_('GREATER')
+def Cond(self, p):
+    return "Greater"
+
+@_('LESSER')
+def Cond(self, p):
+    return "Lesser"
+
+@_('DECLARATION VAR ASSIGNATION expr SEMI')
+def var_assign(self, p):
+    return ('var_assign', p.VAR, p.expr)
+
+@_('DECLARATION VAR SEMI')
+def var_assign(self, p):
+    return ('var_assign', p.VAR, 0)
+
+@_('INT')
+def expr(self, p):
+    return ('num', p.INT)
+
+@_('MINUS INT')
+def expr(self, p):
+    return ('num', -1*p.INT)
+
+@_('VAR')
+def expr(self, p):
+    return ('var', p.VAR)
+
+@_('VAR')
+def var(self, p):
+    return ('var', p.VAR)
