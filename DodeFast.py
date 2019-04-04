@@ -72,11 +72,11 @@ class BasicParser(Parser):
 
     @_('INICIO TWO_POINTS LBRACK Bloque RBRACK FINAL SEMI DecFunc')
     def statement(self,p):
-      return ("inicio", p.DecFunc, p.Bloque)
+        return ("inicio", p.DecFunc, p.Bloque)
 
     @_('declaracion Bloque')
     def Bloque(self,p):
-      return ["multStatements", p.declaracion] + [p.Bloque]
+        return ["multStatements", p.declaracion] + [p.Bloque]
 
     @_('expr SEMI')
     def declaracion(self, p):
@@ -94,36 +94,37 @@ class BasicParser(Parser):
     def Bloque(self,p):
       pass
 
-    @_('Proc SEMI DecFunc')
+    @_('Proc_dec SEMI DecFunc')
     def DecFunc(self,p):
-        return ['multi_proc', p.Proc] + [p.DecFunc]
+        print("afhj")
+        return ['multi_proc', p.Proc_dec] + [p.DecFunc]
 
     @_('')
     def DecFunc(self,p):
         pass
 
     @_('PROC VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT LBRACK func_Bloque RBRACK')
-    def Proc(self,p):
+    def Proc_dec(self,p):
         parametros = p.Parametros
-        return ('multi_parameters', p.VAR, parametros, p.func_Bloque)
+        return ('proc_def', p.VAR, parametros, p.func_Bloque)
 
     @_('parametro Parametros')
     def Parametros(self,p):
-        return ["parametros",p.parametro] + [p.Parametros]
+        return ["parametros",p.parametro] + p.Parametros
 
     @_('COMA parametro Parametros')
     def Parametros(self,p):
-        return [p.parametro] + [p.Parametros]
+        return [p.parametro] + p.Parametros
 
     @_('')
     def Parametros(self,p):
-        pass
+        return []
 
     @_('expr')
     def parametro(self,p):
         return p.expr
 
-    @_('func_Dec INICIO TWO_POINTS func_expr FINAL SEMI')
+    @_('func_Dec INICIO TWO_POINTS LBRACK func_expr RBRACK FINAL SEMI')
     def func_Bloque(self,p):
         return
 
@@ -456,6 +457,9 @@ class BasicExecute:
             except:
                 print("The called function is not defined")
 
+        if node[0] == 'proc_def':
+            pass
+
         if node[0] == 'process_def_parameters':
             if 'var_assign' in node[3]:
                 print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
@@ -546,7 +550,7 @@ class BasicExecute:
             except:
                 pass
 #----------------------Lexing run--------------------
-'''
+
 if __name__ == '__main__':
     lexer = BasicLexer()
     env = {}
@@ -559,7 +563,7 @@ if __name__ == '__main__':
             lex = lexer.tokenize(text)
             for token in lex:
                 print(token)
-
+'''
 #--------------------Parsing run----------------------
 
 if __name__ == '__main__':
@@ -574,7 +578,8 @@ if __name__ == '__main__':
         if text:
             tree = parser.parse(lexer.tokenize(text))
             print(tree)
-    '''
+'''
+"""
 #---------------------Full run-----------------------
 
 if __name__ == '__main__':
@@ -591,3 +596,4 @@ if __name__ == '__main__':
             tree = parser.parse(lex)
             BasicExecute(tree, env)
 #            print(tree)
+"""

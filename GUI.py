@@ -241,11 +241,13 @@ class Window(Frame):
             for line in lines:
                 if line:
                     try:
+                        print(lines)
+
                         lex = self.lexer.tokenize(line)
                         tree = self.parser.parse(lex)
 
                         print(tree)
-                        
+
                     except AttributeError:
                         self.txt += ">>> Syntax Error! Expression not found! \nCheck if everything is written correctly" + "\n"
                         break
