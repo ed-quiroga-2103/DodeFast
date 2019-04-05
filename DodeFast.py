@@ -446,11 +446,12 @@ class BasicExecute:
 
         if node[0] == 'multi_proc':
             if node[1][0] == 'proc_def':
+                x = node[1][2]
                 if node[1][3] == None:
                     print("WARNING: You are defining a empty process")
-                    self.env[node[1][1]] = tuple([node[1][3],node[1][2]])
+                    self.env[node[1][1]] = tuple([node[1][3],x[1:]])
                 else:
-                    self.env[node[1][1]] = tuple([node[1][3],node[1][2]])
+                    self.env[node[1][1]] = tuple([node[1][3],x[1:]])
                     print("Process saved")
             else:
                 print("There's no process defined")
