@@ -113,7 +113,6 @@ class BasicParser(Parser):
 
     @_('Proc_dec SEMI DecFunc')
     def DecFunc(self,p):
-        print("afhj")
         return ['multi_proc', p.Proc_dec] + [p.DecFunc]
 
     @_('')
@@ -512,32 +511,28 @@ class BasicExecute:
             else:
                 return("Function not defined")
 
-        if node[0] == 'process_def':
-            if 'var_assign' in node[2]:
-                print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
+        if node[0] == 'multi_proc':
+            if node[1][0] == 'proc_def':
+                x = node[1][2]
+                x = x[1:]
+                cont = 0
+                while cont != len(x)-1:
+                    if x[cont] in x[(cont+1):]:
+                        print ("Check parameters")
+                        break
+                    else:
+                        cont += 1
+                if cont == len(x):
+                    if node[1][3] == None:
+                        print("WARNING: You are defining a empty process")
+                        self.env[node[1][1]] = tuple([node[1][3],x[1:]])
+                    else:
+                        self.env[node[1][1]] = tuple([node[1][3],x[1:]])
+                        print("Process saved")
             else:
-                self.env[node[1]] = node[2]
+                print("There's no process defined")
 
         if node[0] == 'process_call':
-            try:
-                return self.walkTree(self.env[node[1]])
-            except:
-                print("The called function is not defined")
-
-        if node[0] == 'proc_def':
-            pass
-
-        if node[0] == 'process_def_parameters':
-            if 'var_assign' in node[3]:
-                print("After Inicio:, only expressions are allowed, which represent any element of the language, with the exception of the declaration of variables.")
-            else:
-                if node[2] in node[3]:
-                    self.env[node[1]] = tuple([node[3],node[2]])
-                    print("Se guardo")
-                else:
-                    print("Error, the defined procedure does not use the set parameter")
-
-        if node[0] == 'process_call_parameters':
             try:
                 x = list(self.env[node[1]])
                 y = list(x[0])
@@ -548,8 +543,9 @@ class BasicExecute:
                 y[cont] = node[2]
                 return self.walkTree(tuple(y))
             except:
-                print("The called function is not defined")
+                print("Check if the process is correctly called")
 
+#Inicio: {} Final; Proc Racso(a,s,d,f,h,j) {Inicio: {} Final;};
 
         if node[0] == 'add':
             return self.walkTree(node[1]) + self.walkTree(node[2])
