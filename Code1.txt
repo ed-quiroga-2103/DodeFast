@@ -1,0 +1,3 @@
+Inicio:
+	{ DCL A; }
+Final;

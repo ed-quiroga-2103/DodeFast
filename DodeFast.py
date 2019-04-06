@@ -1,13 +1,15 @@
 from sly import Lexer as Lexer
 from sly import Parser as Parser
-
+from SocketClient import *
+import random
 class BasicLexer(Lexer):
 
     tokens = { DECLARATION, ASSIGNATION, ENCASO, CUANDO, PRINT, ENTONS, SINO, FINENCASO, VAR, INT,
                 SEMI, LBRACK, RBRACK, GREATEREQ, LESSEREQ, EQ, GREATER, LESSER,
                 MINUS, TWO_POINTS, INICIO, FINAL, PROC, LLAMAR,
                 INC, DEC, INI, PARENTHESIS_LEFT, PARENTHESIS_RIGHT, COMA, MOVER, ALEATORIO,
-                 REPITA, HASTAENCONTRAR, DESDE, HASTA, HAGA, FINDESDE}
+                 REPITA, HASTAENCONTRAR, DESDE, HASTA, HAGA, FINDESDE,AF,F,DFA,IFA,DFB,IFB,A,
+                 DAA,IAA,DAB,IAB,AA}
 
     ignore = " \t"
 
@@ -25,6 +27,21 @@ class BasicLexer(Lexer):
     PARENTHESIS_LEFT = r"\("
     PARENTHESIS_RIGHT = r"\)"
     TWO_POINTS = r":"
+
+#----Movimientos---
+
+    AF = r'AF'
+    F = r'F'
+    DFA = r'DFA'
+    IFA = r'IFA'
+    DFB = r'DFB'
+    IFB = r'IFB'
+    A  = r'A'
+    DAA = r'DAA'
+    IAA = r'IAA'
+    DAB = r'DAB'
+    IAB = r'IAB'
+    AA = r'AA'
 
 #----Palabras------
     INICIO = r'Inicio'
@@ -209,9 +226,9 @@ class BasicParser(Parser):
     def Ini(self, p):
         return ('fun_call', p.INI, p.var, p.expr)
 
-    @_('MOVER PARENTHESIS_LEFT expr PARENTHESIS_RIGHT')
+    @_('MOVER PARENTHESIS_LEFT movimientos PARENTHESIS_RIGHT')
     def Mover(self, p):
-        return ('fun_call', p.MOVER, p.expr)
+        return ('fun_call', p.MOVER, p.movimientos)
 
     @_('ALEATORIO PARENTHESIS_LEFT PARENTHESIS_RIGHT')
     def Aleatorio(self, p):
@@ -315,6 +332,44 @@ class BasicParser(Parser):
     def var(self, p):
         return ('var', p.VAR)
 
+    @_('AF')
+    def movimientos(self,p):
+        return p.AF
+    @_('A')
+    def movimientos(self,p):
+        return p.AF
+    @_('F')
+    def movimientos(self,p):
+        return p.AF
+    @_('IFA')
+    def movimientos(self, p):
+        return p.AF
+    @_('DFA')
+    def movimientos(self, p):
+        return p.AF
+    @_('DFB')
+    def movimientos(self, p):
+        return p.AF
+    @_('IFB')
+    def movimientos(self, p):
+        return p.AF
+    @_('DAA')
+    def movimientos(self, p):
+        return p.AF
+    @_('IAA')
+    def movimientos(self, p):
+        return p.AF
+    @_('DAB')
+    def movimientos(self, p):
+        return p.AF
+    @_('IAB')
+    def movimientos(self, p):
+        return p.AF
+    @_('AA')
+    def movimientos(self, p):
+        return p.AF
+
+
     #Cambiar a funcDef
     #@_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
     #def sentencia(self, p):
@@ -335,6 +390,7 @@ class BasicExecute:
 
     def __init__(self, env):
         self.env = env
+        self.ip = 0
 
 
     def walkTree(self, node):
@@ -442,6 +498,17 @@ class BasicExecute:
             elif node[1] == 'Ini':
                 self.env[node[2][1]] = self.walkTree(node[3])
                 return(self.env[node[2][1]])
+            elif node[1] == 'Mover':
+                HOST = ""
+                PORT = 0
+                sendData(node[2].encode(), HOST, PORT)
+            elif node[1] == 'Aleatorio':
+
+                movimientos = ['AF','F','DFA','IFA','DFB','IFB'
+                                ,'A','DAA','IAA','DAB','IAB','AA']
+                movimiento = random.choice(movimientos)
+                sendData(movimiento.encode())
+
             else:
                 return("Function not defined")
 

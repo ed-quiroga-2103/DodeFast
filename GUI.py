@@ -1,11 +1,15 @@
 from tkinter import *
 from DodeFast import *
 from CodeManager import *
+from TextManager import *
+from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import asksaveasfile
 
 #-----------------CONSTANTS---------------------
 
 WIDTH = 500
 HEIGHT = 600
+
 
 #-----------------------------------------------
 
@@ -56,6 +60,7 @@ class Window(Frame):
         # adds a command to the menu option, calling it exit, and the
         # command it runs on event is client_exit
         file.add_command(label= "New File", command = self.newFile)
+        file.add_command(label= "IP Configuration", command = self.ipconfig_window)
         file.add_command(label="Exit", command=self.client_exit)
 
         #added "file" to our menu
@@ -77,10 +82,26 @@ class Window(Frame):
         #added "file" to our menu
         menu.add_cascade(label="Edit", menu=edit)
 
+    def setIP(self, ip, window):
+        self.DFInterpreter.ip = ip
+
+        print(self.DFInterpreter.ip)
+
+        window.destroy()
+
+    def ipconfig_window(self):
+        newWindow = Toplevel(self)
+        newWindow.config(bg = "white")
+
+        e = Entry(newWindow)
+        e.grid(column = 0, row = 0)
+
+        button = Button(newWindow, text = "Set IP",command = lambda: self.setIP(e.get(), newWindow))
+        button.grid(column = 0, row = 1)
+
 
     def client_exit(self):
         exit()
-
 
     def runCodeA(self, textInput):
 
@@ -196,8 +217,6 @@ class Window(Frame):
 
             self.text.yview(END)
 
-
-
     def newFile(self):
         newWindow = Toplevel(self)
 
@@ -223,9 +242,39 @@ class Window(Frame):
 
         file.add_command(label= "Run", command = lambda: self.runCodeA(text))
 
+        file.add_command(label= "Save", command = lambda: self.saveCode(text))
+
+        file.add_command(label= "Load", command = lambda: self.loadCode(text, "Code1"))
+
         newWindow.bind('<Control-F5>', lambda event : self.runCode(event, text))
 
         menu.add_cascade(label = "File", menu = file)
+
+    def saveCode(self,textInput):
+
+        file = asksaveasfile(mode = "w+", defaultextension = ".txt")
+
+        text = textInput.get("1.0",END)
+
+        file.write(text)
+
+        file.close()
+
+        return
+
+    def loadCode(self, textInput, filename):
+
+        filename = askopenfilename()
+
+        text = loadText(filename)
+
+        textInput.delete(1.0, END)
+
+        textInput.insert(END, text)
+
+        print(text)
+
+        return
 
     def showText(self, event):
 
