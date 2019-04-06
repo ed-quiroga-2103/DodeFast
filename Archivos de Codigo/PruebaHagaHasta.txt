@@ -1,0 +1,30 @@
+Inicio:
+	{
+	  DCL A; 
+	  DCL B;
+	
+	  Llamar Test(A,B);
+	}
+Final;
+
+Proc Test(Num1, Num2){
+	Inicio:
+	{
+		Desde Num1 = 0 Hasta 100 Haga { Inc(Num1,10); 
+			
+			}
+		Fin-Desde;
+		
+		Inc(Num2,123);
+	}
+	Final;
+};
+
+
+
+
+
+
+
+
+

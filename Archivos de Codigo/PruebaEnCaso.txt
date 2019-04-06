@@ -1,0 +1,16 @@
+Inicio:
+	{DCL A DEFAULT 0; DCL B; Llamar Test();}
+Final;
+
+Proc Test () {
+
+		Inicio:{
+			EnCaso Cuando A = 0 Entons { Inc(B,1); } 
+			Cuando A > 10 Entons { Inc(B,2); }
+			Cuando A < 10 Entons { Inc(B,3); }
+			SiNo {}
+			Fin-EnCaso;
+		}
+		Final;
+};
+

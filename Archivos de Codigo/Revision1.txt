@@ -1,0 +1,36 @@
+Inicio;
+DCL 5Identficador1;
+DCL Ide%com;
+DCL @_#;
+DCL B DEFAULT "100";
+DCL MiVariable;
+DCL MiVariable;
+DCL Var1;
+DCL Var2 DEFAULT 1;
+DCL B DEFAULT 100 NOT NULL;
+Inc(Var3, 5);
+EnCaso
+Cuando Var4 < 5 { Mover(DFB); }
+Fin-EnCaso;
+Llamar Proc1 (7);
+Final;
+Final;
+Proc Proc1
+DCL Var1;
+Inicio: Mover(5);
+Final;Inicio:
+	{DCL A DEFAULT 0; DCL B; Llamar Test();}
+Final;
+
+Proc Test () {
+
+		Inicio:{
+			EnCaso Cuando A = 0 Entons { Inc(B,1); } 
+			Cuando A > 10 Entons { Inc(B,2); }
+			Cuando A < 10 Entons { Inc(B,3); }
+			SiNo {}
+			Fin-EnCaso;
+		}
+		Final;
+};
+

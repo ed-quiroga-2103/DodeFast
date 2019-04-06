@@ -1,0 +1,24 @@
+Inicio: { 
+	DCL Identficador1; 
+	DCL Idecom; 
+	DCL A@_#; 
+	DCL B DEFAULT 100; 
+	DCL MiVariable;
+	DCL MiVariable;
+	DCL Var1;
+	DCL Var2 DEFAULT 1;
+	DCL B DEFAULT 100;
+
+	Llamar AProc1(); 
+}
+Final;
+
+
+Proc AProc1 () { 
+	
+	Inicio: {
+		Mover(A_Mov);
+	}
+	Final;
+}; 
+

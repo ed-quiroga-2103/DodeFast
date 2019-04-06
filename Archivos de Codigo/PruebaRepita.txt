@@ -1,0 +1,28 @@
+Inicio:
+	{
+	  DCL A; 
+	
+	  Llamar Test(A);
+	}
+Final;
+
+Proc Test(Num){
+	Inicio:
+	{
+		Repita { Inc(Num,10); 
+			
+			}
+		HastaEncontrar Num = 100;
+		
+		Inc(C,123);
+	}
+	Final;
+};
+
+
+
+
+
+
+
+

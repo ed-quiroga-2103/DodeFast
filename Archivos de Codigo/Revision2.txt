@@ -1,0 +1,132 @@
+Inicio;
+        DCL Var1;
+        DCL Var2 DEFAULT 1;
+        Ini(Var1,1);
+
+        EnCaso
+        Cuando Var1 = 1 {
+            EnCaso Var2
+              Cuando = 1 EnTons
+            {      Llamar  Movimiento1(1);
+                Llamar Movimiento1(2);
+                Llamar Movimiento1(3);
+                Llamar Movimiento1(4);
+                Llamar Movimiento1(5);
+              }
+        SiNo      { Llamar Movimiento1(5);  }
+        Fin-EnCaso;
+        SiNo      { Llamar Movimiento1(1);  }
+        Fin-EnCaso;
+
+        Llamar  Movimiento2(1);
+        Llamar Movimiento2(2);
+        Llamar Movimiento2(3);
+        Llamar Movimiento2(4);
+        Llamar Movimiento2(5);
+        Ini(Var1,5)
+        EnCaso
+        Cuando Var1 = 1 {
+            EnCaso Var2
+              Cuando = 1 EnTons
+            {      Inc(Var1, 9);    }
+        SiNo      {  Inc(Var1, 4);  }
+        Fin-EnCaso;
+        SiNo      { Llamar Movimiento3;  }
+        Fin-EnCaso;
+
+        EnCaso
+        Cuando Var1 = 5 {
+            EnCaso Var2
+              Cuando = 100  EnTons
+            {      Inc(Var1, 9);
+              }
+        SiNo      {  Llamar Movimiento4;  }
+        Fin-EnCaso;
+        SiNo      { Inc(Var1, 4);  }
+        Fin-EnCaso;
+
+    Final;
+
+        Proc  Movimiento1 (Var1)
+        DCL  Var2 DEFAULT 1;
+        Inicio:
+        REPITA
+        EnCaso
+            Cuando Var1 = 1
+              { Mover(AF);  }
+            Cuando Var1 = 2
+              { Mover(F);  }
+            Cuando Var1 = 3
+              { Mover(DFA);  }
+            Cuando Var1 = 4
+              { Mover(IFA);  }
+            Cuando Var1 = 5
+              { Mover(DFB);  }
+        SINO
+              { INC(Var2,1);  }
+        Fin-EnCaso;
+
+        HastaEncontrar Var2 = 3;
+        Final;
+
+        Proc  Movimiento2 (Var1)
+        DCL  Var2 DEFAULT 1;
+        Inicio:
+        DESDE Var2=5  HASTA 7 HAGA
+        EnCaso Var1
+            Cuando  = 1  EnTons
+              { Mover(IFB);  }
+            Cuando  = 2  EnTons
+              { Mover(A);  }
+            Cuando  = 3  EnTons
+              { Mover(DAA);  }
+            Cuando  = 4  EnTons
+              { Mover(IAA);  }
+            Cuando  = 5  EnTons
+              { Mover(DAB);  }
+        SINO
+              { INC(Var2,1);  }
+        Fin-EnCaso;
+
+        Fin-Desde;
+
+        Final;
+
+        Proc  Movimiento3
+        DCL  Var2 DEFAULT 0;
+        DCL  Var3;
+        Inicio:
+        Ini(Var3,10);
+
+        REPITA
+        Mover(IAB);
+        Mover(AA);
+        Inc(Var2, 2);
+        HastaEncontrar Var2 > Var3;
+
+        Final;
+
+        Proc  Movimiento4
+        Inicio:
+        Ini(Var3,10);
+
+        REPITA
+        Aleatorio();
+        Final;Inicio:
+	{ 
+	  Llamar Test();
+	}
+Final;
+
+Proc Test(){
+	Inicio:
+	{
+		Mover(F_Mov);
+	}
+	Final;
+};
+
+
+
+
+

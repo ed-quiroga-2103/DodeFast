@@ -1,0 +1,12 @@
+Inicio:
+	{ DCL A DEFAULT 100; Llamar Test(); }
+Final;
+
+Proc Test(){
+
+	Inicio:
+	{
+		Inc(A,200);
+	}	
+	Final;
+};

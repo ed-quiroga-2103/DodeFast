@@ -170,38 +170,42 @@ class Window(Frame):
         if text:
 
             lines = manageCode(text)
-            #try:
-            for line in lines:
-                if line:
-                    try:
-                        lex = self.lexer.tokenize(line)
-                        tree = self.parser.parse(lex)
-                        print(tree)
-                    except AttributeError:
-                        self.txt += ">>> Syntax Error! Expression in code block not found!" + "\n"
-                        break
-                    #except:
-                    #    self.txt += ">>> Illegal token in code block!" + "\n"
-                    #    break
+            try:
+                for line in lines:
+                    if line:
+                        try:
+                            lex = self.lexer.tokenize(line)
+                            tree = self.parser.parse(lex)
+                            print(tree)
+                        except AttributeError:
+                            self.txt += ">>> Syntax Error! Expression in code block not found!" + "\n"
+                            break
+                        except:
+                           self.txt += ">>> Illegal token in code block!" + "\n"
+                           break
 
 
 
-                    result = self.DFInterpreter.walkTree(tree)
-                    print("Resultado " +str(result))
+                        result = self.DFInterpreter.walkTree(tree)
+                        print("Resultado " +str(result))
 
-                    try:
-                        if isinstance(result, list):
-                            self.txt += str(result) + "\n"
+                        try:
+                            if isinstance(result, list):
+                                self.txt += str(result) + "\n"
 
-                        if result[0] == "print":
-                            self.txt += str(result[1]) + "\n"
-                            print("here")
-                    except:
-                        pass
+                            if result[0] == "print":
+                                self.txt += str(result[1]) + "\n"
+                                print("here")
+                        except:
+                            pass
 
-
-            #except:
-                #self.txt += ">>> Semantic error on code block!\nCheck your code because something is not right." + "\n"
+            except ConnectionRefusedError:
+                self.txt += ">>> Connection refused!\nCheck your connection." + "\n"
+            except:
+                if self.DFInterpreter.error != "":
+                    self.txt += self.DFInterpreter.error + "\n"
+                else:
+                    self.txt += ">>> Semantic error on code block!\nCheck your code because something is not right." + "\n"
 
 
             self.e.delete(0,END)

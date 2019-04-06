@@ -1,0 +1,29 @@
+Inicio: { #Arreglar punto y coma y agregar llaves
+	
+	DCL Identficador1; #Empieza con numero
+	DCL Idecom; #Token ilegal %
+	DCL A@_#; #Token inicial ilegal
+	DCL B DEFAULT 100; #Comillas en un int
+	DCL MiVariable;
+	DCL MiVariable;
+	DCL Var1;
+	DCL Var2 DEFAULT 1;
+	DCL B DEFAULT 100; #Not null no es admitido
+	Inc(Var3, 5); #Funciones no permitida en este bloque
+	EnCaso
+	Cuando Var4 < 5 { Mover(DFB); }
+	Fin-EnCaso;
+			#################################
+	Llamar Proc1 (7); #Parametro
+}
+Final;
+Final;   #Final dos veces
+
+Proc Proc1 { #Procedimiento detecta el nombre como palabra reservada
+	DCL Var1;
+	Inicio: {
+		Mover(5); #parametro no admitido
+	}
+	Final;
+}; #Falta punto y coma
+

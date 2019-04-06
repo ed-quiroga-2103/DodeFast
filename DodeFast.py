@@ -335,40 +335,40 @@ class BasicParser(Parser):
 
     @_('AF')
     def movimientos(self,p):
-        return 'AF'
+        return '1'
     @_('A')
     def movimientos(self,p):
-        return 'A'
+        return '7'
     @_('F')
     def movimientos(self,p):
-        return 'F'
+        return '2'
     @_('IFA')
     def movimientos(self, p):
-        return 'IFA'
+        return '4'
     @_('DFA')
     def movimientos(self, p):
-        return 'DFA'
+        return '3'
     @_('DFB')
     def movimientos(self, p):
-        return 'DFB'
+        return '5'
     @_('IFB')
     def movimientos(self, p):
-        return 'IFB'
+        return '6'
     @_('DAA')
     def movimientos(self, p):
-        return 'DAA'
+        return '8'
     @_('IAA')
     def movimientos(self, p):
-        return 'IAA'
+        return '9'
     @_('DAB')
     def movimientos(self, p):
-        return 'DAB'
+        return 'A'
     @_('IAB')
     def movimientos(self, p):
-        return 'IAB'
+        return 'B'
     @_('AA')
     def movimientos(self, p):
-        return 'AA'
+        return 'C'
 
     @_('LLAMAR VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT SEMI')
     def func_call(self, p):
@@ -382,6 +382,7 @@ class BasicExecute:
     def __init__(self, env):
         self.env = env
         self.ip = 0
+        self.error = ""
 
 
     def walkTree(self, node):
@@ -390,7 +391,8 @@ class BasicExecute:
             return node
         if isinstance(node, str):
             return node
-
+        if isinstance(node,list) and len(node) ==1:
+            return self.walkTree(node[0])
         if node is None:
             return None
 
@@ -424,10 +426,12 @@ class BasicExecute:
 
         if node[0] == 'EnCasoA':
 
-
+            print("EnCaso")
             for i in range(len(node[1])):
                 result = self.walkTree(node[1][i])
+                print(result)
                 if result:
+                    print(node[1][i][2])
                     return self.walkTree(node[1][i][2])
                     break
 
@@ -490,7 +494,7 @@ class BasicExecute:
                 self.env[node[2][1]] = self.walkTree(node[3])
                 return(self.env[node[2][1]])
             elif node[1] == 'Mover':
-                HOST = self.ip
+                HOST = str(self.ip)
                 PORT = 65000
                 sendData(node[2].encode(), HOST, PORT)
             elif node[1] == 'Aleatorio':
@@ -529,27 +533,41 @@ class BasicExecute:
 
         if node[0] == 'process_call':
         #try:
-            print(node)
             parametros = node[2]
             parametros = parametros[1:]
-            x = list(self.env[node[1]])
-            proc = list(x[0])
-            previos =list(x[1])
+            proc = list(self.env[node[1]])
+            proced = list(proc[0])
+            previos =list(proc[1])
             cont = 0
+            if parametros != []:
+                for i in range(len(proced)):
+                    if isinstance(proced[i],tuple):
+                        if proced[i][0] == "while_loop":
+                            print("here")
+                            for j in range(len(proced[i][1])):
+                                proced[i][1][j] = list(proced[i][1][j])
 
-            for i in range(len(proc)):
-                if isinstance(proc[i], tuple):
-                    proc[i] = list(proc[i])
+                                if not proced[i][1][j][1] == "Mover" and not proced[i][1][j][1] == "Aleatorio":
+                                    proced[i][1][j][2] = parametros[previos.index(proced[i][1][j][2])]
+                                proced[i] = list(proced[i])
+                                proced[i][2] = list(proced[i][2])
+                                proced[i][2][1] = parametros[previos.index(proced[i][2][1])]
+                        elif proced[i][0] == "for_loop":
+                            proced[i] = list(proced[i])
+                            for j in range(len(proced[i][4])):
+                                proced[i][4][j] = list(proced[i][4][j])
+                                proced[i][4][j][2] = parametros[previos.index(proced[i][4][j][2])]
+                        else:
+                            proced[i] = list(proced[i])
+                            if proced[i][1] != "Mover" and proced[i][1] != "Aleatorio":
+                                proced[i][2] = parametros[previos.index(proced[i][2])]
 
-            for i in range(1,len(proc)):
-                if proc[i][0] == "fun_call":
+            else:
+                pass
 
-                    if not proc[i][1] == "Mover" and not proc[i][1] == "Aleatorio":
+            print(proced)
 
-                        proc[i][2] = parametros[cont]
-                        cont+=1
-
-            return self.walkTree(proc)
+            return self.walkTree(proced)
 
 
 
@@ -573,7 +591,7 @@ class BasicExecute:
             try:
                 return self.env[node[1]]
             except LookupError:
-                print("Undefined variable '"+node[1]+"' found!")
+                self.error = "Undefined variable '"+node[1]+"' found!"
                 return "Undefined variable '"+node[1]+"' found!"
         if node[0]== 'while_loop':
             loop_sentence = node[1]
