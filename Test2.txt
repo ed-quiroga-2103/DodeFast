@@ -1,5 +1,6 @@
 Inicio:
-	{ 
+	{
+	  DCL A; 
 	  Llamar Test();
 	}
 Final;
@@ -7,10 +8,13 @@ Final;
 Proc Test(){
 	Inicio:
 	{
-		Mover(DAB_Mov);
+		Repita { Inc(A,10); }
+		HastaEncontrar A = 100;
 	}
 	Final;
 };
+
+
 
 
 

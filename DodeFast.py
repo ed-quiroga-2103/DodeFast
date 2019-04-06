@@ -28,20 +28,6 @@ class BasicLexer(Lexer):
     PARENTHESIS_RIGHT = r"\)"
     TWO_POINTS = r":"
 
-#----Movimientos---
-
-    AF = r'AF'
-    F = r'F'
-    DFA = r'DFA'
-    IFA = r'IFA'
-    DFB = r'DFB'
-    IFB = r'IFB'
-    A  = r'A'
-    DAA = r'DAA'
-    IAA = r'IAA'
-    DAB = r'DAB'
-    IAB = r'IAB'
-    AA = r'AA'
 
 #----Palabras------
     INICIO = r'Inicio'
@@ -67,6 +53,22 @@ class BasicLexer(Lexer):
     HAGA = 'Haga'
     FINDESDE= 'Fin-Desde'
     PRINT = "Print"
+
+#----Movimientos---
+
+    AF = 'AF_Mov'
+    F = 'F_Mov'
+    DFA = 'DFA_Mov'
+    IFA = 'IFA_Mov'
+    DFB = 'DFB_Mov'
+    IFB = 'IFB_Mov'
+    A  = 'A_Mov'
+    DAA = 'DAA_Mov'
+    IAA = 'IAA_Mov'
+    DAB = 'DAB_Mov'
+    IAB = 'IAB_Mov'
+    AA = 'AA_Mov'
+
     VAR = r"[a-zA-Z_][a-zA-Z0-9_@#]*"
 
 
@@ -142,27 +144,27 @@ class BasicParser(Parser):
 
     @_('func_Dec INICIO TWO_POINTS LBRACK func_expr RBRACK FINAL SEMI')
     def func_Bloque(self,p):
-        return
+        return [p.func_Dec, ["proc_func"]+p.func_expr]
 
     @_('var_assign func_Dec')
     def func_Dec(self,p):
-        return
+        return [p.var_assign] + p.func_Dec
 
     @_('')
     def func_Dec(self,p):
-        pass
+        return []
 
     @_('funciones func_expr')
     def func_expr(self,p):
-        return
+        return [p.funciones] + p.func_expr
 
     @_('loops func_expr')
     def func_expr(self,p):
-        return
+        return [p.loops] + p.func_expr
 
     @_('')
     def func_expr(self,p):
-      pass
+      return []
 
     @_('Ini')
     def funciones(self,p):
@@ -206,11 +208,11 @@ class BasicParser(Parser):
 
     @_('REPITA LBRACK func_expr RBRACK HASTAENCONTRAR Evaluation SEMI')
     def Repita(self,p):
-        return ('while_loop', p.statement, p.Evaluation)
+        return ('while_loop', p.func_expr, p.Evaluation)
 
     @_('DESDE var EQ expr HASTA expr HAGA LBRACK func_expr RBRACK FINDESDE SEMI')
     def Desde(self, p):
-        return ('for_loop', p.var, p.expr0, p.expr1, p.statement)
+        return ('for_loop', p.var, p.expr0, p.expr1, p.func_expr)
 
 
     @_('INC PARENTHESIS_LEFT var COMA expr PARENTHESIS_RIGHT SEMI')
@@ -225,7 +227,7 @@ class BasicParser(Parser):
     def Ini(self, p):
         return ('fun_call', p.INI, p.var, p.expr)
 
-    @_('MOVER PARENTHESIS_LEFT movimientos PARENTHESIS_RIGHT')
+    @_('MOVER PARENTHESIS_LEFT movimientos PARENTHESIS_RIGHT SEMI')
     def Mover(self, p):
         return ('fun_call', p.MOVER, p.movimientos)
 
@@ -281,11 +283,11 @@ class BasicParser(Parser):
 
     @_('ENTONS LBRACK func_expr RBRACK')
     def Entons(self, p):
-        return p.statement
+        return p.func_expr
 
     @_('SINO LBRACK func_expr RBRACK')
     def SiNo(self, p):
-        return ("SiNo", p.statement)
+        return ("SiNo", p.func_expr)
 
     @_('EQ')
     def Cond(self, p):
@@ -333,52 +335,42 @@ class BasicParser(Parser):
 
     @_('AF')
     def movimientos(self,p):
-        return p.AF
+        return 'AF'
     @_('A')
     def movimientos(self,p):
-        return p.AF
+        return 'A'
     @_('F')
     def movimientos(self,p):
-        return p.AF
+        return 'F'
     @_('IFA')
     def movimientos(self, p):
-        return p.AF
+        return 'IFA'
     @_('DFA')
     def movimientos(self, p):
-        return p.AF
+        return 'DFA'
     @_('DFB')
     def movimientos(self, p):
-        return p.AF
+        return 'DFB'
     @_('IFB')
     def movimientos(self, p):
-        return p.AF
+        return 'IFB'
     @_('DAA')
     def movimientos(self, p):
-        return p.AF
+        return 'DAA'
     @_('IAA')
     def movimientos(self, p):
-        return p.AF
+        return 'IAA'
     @_('DAB')
     def movimientos(self, p):
-        return p.AF
+        return 'DAB'
     @_('IAB')
     def movimientos(self, p):
-        return p.AF
+        return 'IAB'
     @_('AA')
     def movimientos(self, p):
-        return p.AF
+        return 'AA'
 
-
-    #Cambiar a funcDef
-    #@_('PROC VAR PARENTHESIS_LEFT PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
-    #def sentencia(self, p):
-    #    return ('process_def', p.VAR, p.statement)
-    #Cambiar a funcDef
-    #@_('PROC VAR PARENTHESIS_LEFT expr PARENTHESIS_RIGHT INICIO TWO_POINTS statement FINAL SEMI')
-    #def sentencia(self, p):
-    #    return ('process_def_parameters', p.VAR, p.expr, p.statement)
-
-    @_('LLAMAR VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT')
+    @_('LLAMAR VAR PARENTHESIS_LEFT Parametros PARENTHESIS_RIGHT SEMI')
     def func_call(self, p):
         return ('process_call', p.VAR, p.Parametros)
 
@@ -498,8 +490,8 @@ class BasicExecute:
                 self.env[node[2][1]] = self.walkTree(node[3])
                 return(self.env[node[2][1]])
             elif node[1] == 'Mover':
-                HOST = ""
-                PORT = 0
+                HOST = self.ip
+                PORT = 65000
                 sendData(node[2].encode(), HOST, PORT)
             elif node[1] == 'Aleatorio':
 
@@ -513,37 +505,55 @@ class BasicExecute:
 
         if node[0] == 'multi_proc':
             if node[1][0] == 'proc_def':
-                x = node[1][2]
-                x = x[1:]
-                cont = 0
-                while cont != len(x)-1:
-                    if x[cont] in x[(cont+1):]:
-                        print ("Check parameters")
-                        break
-                    else:
-                        cont += 1
-                if cont == len(x):
-                    if node[1][3] == None:
+                if node[1][2] == []:
+                    arbol = node[1][3]
+
+                    arbol = arbol[1]
+                    self.env[node[1][1]] = (arbol,[])
+                else:
+                    x = node[1][2]
+                    x = x[1:]
+                    cont = 0
+
+                    if node[1][3][1] == None:
                         print("WARNING: You are defining a empty process")
-                        self.env[node[1][1]] = tuple([node[1][3],x[1:]])
+                        self.env[node[1][1]] = (node[1][3][1],x)
                     else:
-                        self.env[node[1][1]] = tuple([node[1][3],x[1:]])
+                        self.env[node[1][1]] = (node[1][3][1],x)
                         print("Process saved")
             else:
                 print("There's no process defined")
+        if node[0] == "proc_func":
+            for i in range(1,len(node)):
+                self.walkTree(node[i])
 
         if node[0] == 'process_call':
-            try:
-                x = list(self.env[node[1]])
-                y = list(x[0])
-                z = x[1]
-                cont = 0
-                while z != y[cont]:
-                    cont+=1
-                y[cont] = node[2]
-                return self.walkTree(tuple(y))
-            except:
-                print("Check if the process is correctly called")
+        #try:
+            print(node)
+            parametros = node[2]
+            parametros = parametros[1:]
+            x = list(self.env[node[1]])
+            proc = list(x[0])
+            previos =list(x[1])
+            cont = 0
+
+            for i in range(len(proc)):
+                if isinstance(proc[i], tuple):
+                    proc[i] = list(proc[i])
+
+            for i in range(1,len(proc)):
+                if proc[i][0] == "fun_call":
+
+                    if not proc[i][1] == "Mover" and not proc[i][1] == "Aleatorio":
+
+                        proc[i][2] = parametros[cont]
+                        cont+=1
+
+            return self.walkTree(proc)
+
+
+
+
 
 #Inicio: {} Final; Proc Racso(a,s,d,f,h,j) {Inicio: {} Final;};
 
@@ -566,15 +576,14 @@ class BasicExecute:
                 print("Undefined variable '"+node[1]+"' found!")
                 return "Undefined variable '"+node[1]+"' found!"
         if node[0]== 'while_loop':
-            loop_sentence = node[1][1]
+            loop_sentence = node[1]
             loop_setup = self.walkTree(node[2])
             val= node[2][1][1]
             i= self.walkTree(node[2][1])
-            print (i)
+            print(loop_sentence)
             while True:
-                #self.walkTree(loop_sentence)
-                print(node[1])
-                self.walkTree(node[1])
+                for i in node[1]:
+                    self.walkTree(i)
                 if self.walkTree(node[2]):
                     print ("Se cumple la condición")
                     break
@@ -601,11 +610,11 @@ class BasicExecute:
             val = node[2][0]
             print(val)
             loop_limit = node[3][1]
-            res = self.walkTree(node[2])
             for i in range(loop_count+1, loop_limit+1):
                 self.env[node[1][1]] = self.env[node[1][1]] + 1
-                if res is not None:
-                    self.walkTree(node[4])
+
+                for i in node[4]:
+                    self.walkTree(i)
 
             del self.env[node[1][1]]
             try:

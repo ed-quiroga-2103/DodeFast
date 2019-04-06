@@ -12,4 +12,3 @@ app  = Window(root, DFInterpreter)
 root.config(bg = "black")
 
 root.mainloop()
-        

@@ -82,6 +82,8 @@ class Window(Frame):
         #added "file" to our menu
         menu.add_cascade(label="Edit", menu=edit)
 
+        self.ipconfig_window()
+
     def setIP(self, ip, window):
         self.DFInterpreter.ip = ip
 
@@ -115,8 +117,6 @@ class Window(Frame):
         if text:
 
             lines = manageCode(text)
-
-            print(lines)
             try:
                 for line in lines:
                     if line:
@@ -170,39 +170,38 @@ class Window(Frame):
         if text:
 
             lines = manageCode(text)
-
-            print(lines)
-            try:
-                for line in lines:
-                    if line:
-                        try:
-                            lex = self.lexer.tokenize(line)
-                            tree = self.parser.parse(lex)
-                        except AttributeError:
-                            self.txt += ">>> Syntax Error! Expression in code block not found!" + "\n"
-                            break
-                        except:
-                            self.txt += ">>> Illegal token in code block!" + "\n"
-                            break
-
+            #try:
+            for line in lines:
+                if line:
+                    try:
+                        lex = self.lexer.tokenize(line)
+                        tree = self.parser.parse(lex)
+                        print(tree)
+                    except AttributeError:
+                        self.txt += ">>> Syntax Error! Expression in code block not found!" + "\n"
+                        break
+                    #except:
+                    #    self.txt += ">>> Illegal token in code block!" + "\n"
+                    #    break
 
 
-                        result = self.DFInterpreter.walkTree(tree)
-                        print("Resultado " +str(result))
 
-                        try:
-                            if isinstance(result, list):
-                                self.txt += str(result) + "\n"
+                    result = self.DFInterpreter.walkTree(tree)
+                    print("Resultado " +str(result))
 
-                            if result[0] == "print":
-                                self.txt += str(result[1]) + "\n"
-                                print("here")
-                        except:
-                            pass
+                    try:
+                        if isinstance(result, list):
+                            self.txt += str(result) + "\n"
+
+                        if result[0] == "print":
+                            self.txt += str(result[1]) + "\n"
+                            print("here")
+                    except:
+                        pass
 
 
-            except:
-                self.txt += ">>> Semantic error on code block!\nCheck your code because something is not right." + "\n"
+            #except:
+                #self.txt += ">>> Semantic error on code block!\nCheck your code because something is not right." + "\n"
 
 
             self.e.delete(0,END)
